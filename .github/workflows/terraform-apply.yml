@@ -48,6 +48,8 @@ jobs:
         role-to-assume: arn:aws:iam::880587150218:role/github-actions
         aws-region: us-east-1
 
+    - name: Set execute permission for publish.sh
+      run: chmod +x publish.sh
 
     - name: Publish
       if: github.ref == 'refs/heads/main'
