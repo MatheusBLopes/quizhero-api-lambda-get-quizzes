@@ -1,0 +1,52 @@
+name: Terraform Apply
+on: workflow_dispatch
+env:
+  AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+  AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+
+jobs:
+  terraform_apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Terraform Apply
+      run: |
+        terraform init
+        terraform apply -auto-approve
+
+  build:
+    name: Deploy Lambda Code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Clone
+      uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@main
+      with:
+        role-to-assume: arn:aws:iam::880587150218:role/github-actions
+        aws-region: us-east-1
+
+
+    - name: Publish
+      if: github.ref == 'refs/heads/main'
+      run: ./publish.sh dev
