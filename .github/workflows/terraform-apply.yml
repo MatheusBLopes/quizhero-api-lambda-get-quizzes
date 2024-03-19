@@ -23,6 +23,7 @@ jobs:
   build:
     name: Deploy Lambda Code
     runs-on: ubuntu-latest
+    needs: terraform_apply
     strategy:
       matrix:
         python-version: ["3.9"]
