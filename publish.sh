@@ -7,9 +7,7 @@
 # AWS variables
 AWS_REGION=us-east-1
 
-PROJECT_NAME=LambdaGetQuiz
-
-LAMBDA_LAYER_NAME=python
+LAMBDA_NAME=LambdaGetQuiz
 
 # the directory containing the script file
 dir="$(cd "$(dirname "$0")"; pwd)"
@@ -25,7 +23,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity \
 
 echo aws lambda delete-alias $1
 aws lambda delete-alias \
-    --function-name $PROJECT_NAME \
+    --function-name $LAMBDA_NAME \
     --name $1 \
     --region $AWS_REGION \
     2>/dev/null
@@ -35,24 +33,55 @@ rm --force lambda.zip
 chmod -R 777 ./app
 zip -r lambda.zip app
 
-echo aws lambda update-function-code $PROJECT_NAME
+STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+
+while [[ "$STATE" == "InProgress" ]]
+do
+    echo "sleep 5sec ...."
+    sleep 5s
+    STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+    echo $STATE
+done
+
+echo aws lambda update-function-code $LAMBDA_NAME
 aws lambda update-function-code \
-    --function-name $PROJECT_NAME \
+    --function-name $LAMBDA_NAME \
     --zip-file fileb://lambda.zip \
     --region $AWS_REGION
 
-echo aws lambda update-function-code $PROJECT_NAME
+STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+
+while [[ "$STATE" == "InProgress" ]]
+do
+    echo "sleep 5sec ...."
+    sleep 5s
+    STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+    echo $STATE
+done
+
+echo aws lambda version $LAMBDA_NAME
 VERSION=$(aws lambda publish-version \
-    --function-name $PROJECT_NAME \
+    --function-name $LAMBDA_NAME \
     --description $1 \
     --region $AWS_REGION \
     --query Version \
     --output text)
 echo published version: $VERSION
 
+
+STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+
+while [[ "$STATE" == "InProgress" ]]
+do
+    echo "sleep 5sec ...."
+    sleep 5s
+    STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
+    echo $STATE
+done
+
 echo aws lambda create-alias $1
 aws lambda create-alias \
-    --function-name $PROJECT_NAME \
+    --function-name $LAMBDA_NAME \
     --name $1 \
     --function-version $VERSION \
     --region $AWS_REGION
