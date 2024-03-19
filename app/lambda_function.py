@@ -1,5 +1,5 @@
 import json
-from src.adapters.mysql_adapter import MySqlAdapater
+from app.src.adapters.mysql_adapter import MySqlAdapater
 
 def lambda_handler(event, context):
     host = 'quizhero.cb0yj0kskzwr.us-east-1.rds.amazonaws.com'

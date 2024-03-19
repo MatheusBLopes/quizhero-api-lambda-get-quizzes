@@ -28,6 +28,10 @@ aws lambda delete-alias \
     --region $AWS_REGION \
     2>/dev/null
 
+echo build
+cd ./app
+pip install requirements.txt
+
 echo zip lambda package
 rm --force lambda.zip
 chmod -R 777 ./app
