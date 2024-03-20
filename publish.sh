@@ -40,7 +40,9 @@ echo zip lambda package
 rm --force lambda.zip
 chmod -R 777 ./app
 cp -r app application
-zip -r lambda.zip application
+cd application
+zip -r ../lambda.zip *
+cd ..
 
 STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
 
