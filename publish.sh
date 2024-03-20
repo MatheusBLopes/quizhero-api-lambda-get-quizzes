@@ -28,15 +28,19 @@ aws lambda delete-alias \
     --region $AWS_REGION \
     2>/dev/null
 
+echo create application folder
+mkdir application
+
 echo build
 cd ./app
-pip install -r requirements.txt
+pip install -r requirements.txt -t ../application
 cd ..
 
 echo zip lambda package
 rm --force lambda.zip
 chmod -R 777 ./app
-zip -r lambda.zip app
+cp -r app application
+zip -r lambda.zip application
 
 STATE=$(aws lambda get-function --function-name "$LAMBDA_NAME" --region $AWS_REGION --query 'Configuration.LastUpdateStatus' --output text)
 
