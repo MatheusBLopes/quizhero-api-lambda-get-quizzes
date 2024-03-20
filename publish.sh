@@ -31,6 +31,7 @@ aws lambda delete-alias \
 echo build
 cd ./app
 pip install -r requirements.txt
+cd ..
 
 echo zip lambda package
 rm --force lambda.zip
